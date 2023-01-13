@@ -98,3 +98,9 @@ www:
 		--tls --key $(pkeyfile) --cert $(certfile) \
 		--no-dotfiles -d false --gzip --brotli --silent
 
+compress: www/index.html.gz www/index.html.br
+%.gz: %
+	gzip -ck $* > $@
+%.br: %
+	brotli -ck $* > $@
+
