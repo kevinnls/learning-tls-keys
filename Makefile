@@ -81,7 +81,15 @@ checkvariable = \
 		$(if $(value $1),,\
 		$(error variable `$1` is required))
 cleanup:
-	rm $(dir)/*
+	rm -f $(dir)/*
+clean:
+	$(call checkvariable,domain)
+	rm -f $(certfile) $(csrfile)
+fullclean:
+	$(call checkvariable,domain)
+	rm -f $(pkeyfile) $(certfile)
+cleanall:
+	rm -f $(dir)/*.csr $(dir)/*.crt $(dir)/*.pem
 
 www:
 	http-server -S -K $(pkeyfile) -C $(certfile)
