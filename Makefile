@@ -13,6 +13,10 @@ csrfile = $(dir)/$(domain).csr
 certfile = $(dir)/$(domain).crt
 domainconffile = domain.cnf
 
+ifdef san
+san_ext = -addext 'subjectAltName=$(san)'
+endif
+
 show-CA:
 	openssl x509 -text -noout -in $(CAcertfile) | less
 
@@ -52,6 +56,7 @@ $(csrfile): $(pkeyfile)
 		-key $(pkeyfile) \
 		-sha512 \
 		-config $(domainconffile) \
+		$(san_ext) \
 		-new -out $(csrfile)
 
 show-csr:
@@ -64,6 +69,7 @@ sign: $(CAcert) $(csrfile)
 		-in $(csrfile) \
 		-CAkey $(CAkeyfile) -CA $(CAcertfile) \
 		-passin file:$(CApassfile) \
+		-copy_extensions copy -ext subjectAltName \
 		-days 365 \
 		-sha512 \
 		-out $(certfile)
