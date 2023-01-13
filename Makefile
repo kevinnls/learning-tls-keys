@@ -93,4 +93,8 @@ cleanall:
 	rm -f $(dir)/*.csr $(dir)/*.crt $(dir)/*.pem
 
 www:
-	http-server www -S -K $(pkeyfile) -C $(certfile)
+	$(call checkvariable,domain)
+	http-server www \
+		--tls --key $(pkeyfile) --cert $(certfile) \
+		--no-dotfiles -d false --gzip --brotli --silent
+
