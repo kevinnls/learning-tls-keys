@@ -1,22 +1,22 @@
 dummy:
 	$(error 'specify a target')
 
-dir = ./priv.d/
+dir = ./priv.d
+
 CAkeyfile = $(dir)/CA.pem
 CAcertfile = $(dir)/CA.crt
 CAconffile = CA.cnf
 CApassfile = CA-pass.cnf
-domainconffile = domain.cnf
+
 pkeyfile = $(dir)/$(domain).pem
 csrfile = $(dir)/$(domain).csr
 certfile = $(dir)/$(domain).crt
+domainconffile = domain.cnf
 
-CAVerify:
+show-CA:
 	openssl x509 -text -noout -in $(CAcertfile) | less
 
 CAKey: $(CAkeyfile)
-CACert: $(CAcertfile)
-
 $(CAkeyfile):
 	openssl genpkey \
 		-out $(CAkeyfile) \
@@ -24,6 +24,8 @@ $(CAkeyfile):
 		-aes256 -pass file:$(CApassfile) \
 		-pkeyopt ec_paramgen_curve:P-384 \
 		-pkeyopt ec_param_enc:named_curve
+
+CACert: $(CAcertfile)
 $(CAcertfile): $(CAkeyfile)
 	openssl req -x509 \
 		-days 365 \
