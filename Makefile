@@ -1,3 +1,4 @@
+.PHONY: www
 dummy:
 	$(error 'specify a target')
 
@@ -92,4 +93,4 @@ cleanall:
 	rm -f $(dir)/*.csr $(dir)/*.crt $(dir)/*.pem
 
 www:
-	http-server -S -K $(pkeyfile) -C $(certfile)
+	http-server www -S -K $(pkeyfile) -C $(certfile)
