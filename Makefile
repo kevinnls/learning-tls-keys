@@ -6,12 +6,14 @@ CAkeyfile = $(dir)/CA.pem
 CAcertfile = $(dir)/CA.crt
 CAconffile = CA.cnf
 CApassfile = CA-pass.cnf
+domainconffile = domain.cnf
 pkeyfile = $(dir)/$(domain).pem
 csrfile = $(dir)/$(domain).csr
 certfile = $(dir)/$(domain).crt
 
 CAVerify:
 	openssl x509 -text -noout -in $(CAcertfile) | less
+
 CAKey: $(CAkeyfile)
 CACert: $(CAcertfile)
 
@@ -41,22 +43,37 @@ $(pkeyfile):
 		-pkeyopt ec_param_enc:named_curve
 
 csr: $(csrfile)
+$(csrfile): export domain=$(domain)
 $(csrfile): $(pkeyfile)
 	$(call checkvariable,domain)
 	openssl req \
 		-key $(pkeyfile) \
-		-sha256 \
+		-sha512 \
+		-config $(domainconffile) \
 		-new -out $(csrfile)
+
+show-csr:
+	$(call checkvariable,domain)
+	openssl req -text -noout -in $(csrfile) | less
 
 sign: $(CAcert) $(csrfile)
 	$(call checkvariable,domain)
-	openssl x509 \
-		-key $(pkeyfile) -in $(csrfile) \
-		-CAKey $(CAkeyfile) -CACert $(CAcertfile) \
-		-days 365 
+	openssl x509 -req \
+		-in $(csrfile) \
+		-CAkey $(CAkeyfile) -CA $(CAcertfile) \
+		-passin file:$(CApassfile) \
+		-days 365 \
+		-sha512 \
+		-out $(certfile)
+show:
+	$(call checkvariable,domain)
+	openssl x509 -noout -text -in $(certfile) | less
 
 checkvariable = \
 		$(if $(value $1),,\
 		$(error variable `$1` is required))
 cleanup:
 	rm $(dir)/*
+
+www:
+	http-server -S -K $(pkeyfile) -C $(certfile)
